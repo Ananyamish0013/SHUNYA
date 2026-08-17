@@ -27,7 +27,7 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
   const [responseInput, setResponseInput] = useState("");
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
 
-  // Initial conversation state with initial AI message
+  // Initial conversation state with starting AI message
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "initial-ai-msg",
@@ -103,100 +103,86 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
           )}
         </div>
 
-        {/* CHATGPT-STYLE CONVERSATION STREAM CONTAINER */}
+        {/* CONVERSATION CONTAINER */}
         <div className="space-y-6 p-6 sm:p-8 bg-[#0F0E0D] border border-[#2E2923] rounded-sm shadow-2xl">
-          {/* Conversation Stream */}
-          <div className="space-y-6 min-h-[280px]">
+          {/* Messages Stream */}
+          <div className="space-y-6 min-h-[300px] flex flex-col justify-start">
             {messages.map((msg, index) => (
-              <div
-                key={msg.id}
-                className={`space-y-3 p-5 rounded-sm transition-all duration-200 animate-fade-in ${
-                  msg.sender === "ai"
-                    ? "bg-[#141210] border border-[#3D3730] border-l-4 border-l-[#FFC928]"
-                    : "bg-[#1A1714] border border-[#3D3730] border-r-4 border-r-[#C45A22]"
-                }`}
-              >
-                <div className="flex items-center justify-between border-b border-[#2A2520] pb-2">
-                  <span
-                    className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${
-                      msg.sender === "ai" ? "text-[#FFC928]" : "text-[#C45A22]"
-                    }`}
-                  >
-                    {msg.sender === "ai" ? (
-                      <>
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#FFC928] animate-pulse" />
-                        AI // MISSION AGENT
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#C45A22]" />
-                        USER // OPERATOR
-                      </>
+              <div key={msg.id} className="w-full">
+                {msg.sender === "ai" ? (
+                  /* PLAIN TEXT AI MESSAGE (NO BOX, NO BORDERS, NO CARDS, NO HEADER BARS) */
+                  <div className="space-y-4 text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed max-w-full">
+                    <p className="font-normal text-[#E8E2D5] leading-relaxed">
+                      Your next objective for {protocol.title} ({protocol.codename}) has been initialized.
+                    </p>
+
+                    <p className="text-[#C2B9AC] leading-relaxed">
+                      {protocol.description}
+                    </p>
+
+                    {index === 0 && protocol.briefing.length > 0 && (
+                      <div className="space-y-1.5 text-xs text-[#A49B91] pt-2">
+                        <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
+                          MISSION DIRECTIVES &amp; BRIEFING:
+                        </span>
+                        {protocol.briefing.map((item, idx) => (
+                          <p key={idx}>• {item}</p>
+                        ))}
+                      </div>
                     )}
-                  </span>
-                  <span className="text-[10px] text-[#7A7266] font-mono">
-                    {msg.timestamp}
-                  </span>
-                </div>
 
-                <div className="space-y-3 text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed whitespace-pre-wrap">
-                  {msg.text}
-
-                  {/* For the initial AI message, show directives & objectives context */}
-                  {msg.sender === "ai" && index === 0 && (
-                    <>
-                      {protocol.briefing.length > 0 && (
-                        <div className="space-y-1.5 text-xs text-[#A49B91] pt-3 border-t border-[#2A2520]">
-                          <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
-                            MISSION DIRECTIVES &amp; BRIEFING:
-                          </span>
-                          {protocol.briefing.map((item, idx) => (
-                            <p key={idx}>• {item}</p>
-                          ))}
+                    {index === 0 && protocol.objectives.length > 0 && (
+                      <div className="pt-2 space-y-2">
+                        <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
+                          TACTICAL OBJECTIVES:
+                        </span>
+                        <div className="grid grid-cols-1 gap-2">
+                          {protocol.objectives.map((obj, i) => {
+                            const isChecked = checkedObjectives[i] || isCompleted;
+                            return (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => toggleObjective(i)}
+                                className={`w-full text-left py-2 px-3 transition-colors flex items-center justify-between cursor-pointer ${
+                                  isChecked
+                                    ? "text-[#FFC928]"
+                                    : "text-[#A49B91] hover:text-[#E8E2D5]"
+                                }`}
+                              >
+                                <span className="text-xs font-mono">
+                                  [{i + 1}] {obj}
+                                </span>
+                                {isChecked ? (
+                                  <CheckCircle2 className="w-4 h-4 text-[#FFC928] shrink-0 ml-2" />
+                                ) : (
+                                  <div className="w-3.5 h-3.5 rounded-full border border-[#4A433A] shrink-0 ml-2" />
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
-                      )}
-
-                      {protocol.objectives.length > 0 && (
-                        <div className="pt-2 space-y-2">
-                          <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
-                            TACTICAL OBJECTIVES:
-                          </span>
-                          <div className="grid grid-cols-1 gap-2">
-                            {protocol.objectives.map((obj, i) => {
-                              const isChecked = checkedObjectives[i] || isCompleted;
-                              return (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => toggleObjective(i)}
-                                  className={`w-full text-left p-3 border transition-colors flex items-center justify-between cursor-pointer ${
-                                    isChecked
-                                      ? "bg-[#1C1814] border-[#FFC928]/40 text-[#FFC928]"
-                                      : "bg-[#0D0C0B] border-[#2A2520] text-[#A49B91] hover:border-[#3D3730]"
-                                  }`}
-                                >
-                                  <span className="text-xs font-mono">
-                                    [{i + 1}] {obj}
-                                  </span>
-                                  {isChecked ? (
-                                    <CheckCircle2 className="w-4 h-4 text-[#FFC928] shrink-0 ml-2" />
-                                  ) : (
-                                    <div className="w-3.5 h-3.5 rounded-full border border-[#4A433A] shrink-0 ml-2" />
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* SUBMITTED USER MESSAGE */
+                  <div className="w-full flex justify-end">
+                    <div className="space-y-2 p-4 rounded-sm bg-[#1C1814] border border-[#3D3730] border-r-4 border-r-[#C45A22] text-left ml-auto max-w-[85%] sm:max-w-[75%]">
+                      <div className="text-[10px] text-[#C45A22] font-bold uppercase tracking-widest">
+                        USER // OPERATOR
+                      </div>
+                      <div className="text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed whitespace-pre-wrap">
+                        {msg.text}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
-          {/* CHATGPT-LIKE ANCHORED CHAT COMPOSER AT BOTTOM */}
+          {/* CHAT COMPOSER AT BOTTOM */}
           <div className="pt-4 border-t border-[#2E2923] space-y-3">
             <div className="relative bg-[#141210] border border-[#3D3730] focus-within:border-[#FFC928] transition-colors rounded-sm overflow-hidden">
               <textarea
