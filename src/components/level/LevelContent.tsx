@@ -5,10 +5,17 @@ import Link from "next/link";
 import { Protocol } from "@/lib/protocols";
 import { useProtocolStore } from "@/stores/useProtocolStore";
 import { RedWaxSeal } from "../protocols/RedWaxSeal";
-import { ArrowLeft, Terminal, CheckCircle2, Send } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Send } from "lucide-react";
 
 interface LevelContentProps {
   protocol: Protocol;
+}
+
+interface ChatMessage {
+  id: string;
+  sender: "ai" | "user";
+  text: string;
+  timestamp: string;
 }
 
 export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
@@ -18,8 +25,17 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
 
   const [showCompletionNotice, setShowCompletionNotice] = useState(false);
   const [responseInput, setResponseInput] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
+
+  // Initial conversation state with initial AI message
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: "initial-ai-msg",
+      sender: "ai",
+      text: `Your next objective for ${protocol.title} (${protocol.codename}) has been initialized.\n\n${protocol.description}`,
+      timestamp: "SYSTEM // 00:00:01",
+    },
+  ]);
 
   const toggleObjective = (index: number) => {
     setCheckedObjectives((prev) => ({
@@ -40,12 +56,21 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
 
   const handleSubmitResponse = () => {
     if (!responseInput.trim()) return;
-    setSubmitted(true);
+
+    const newUserMsg: ChatMessage = {
+      id: `user-msg-${Date.now()}`,
+      sender: "user",
+      text: responseInput.trim(),
+      timestamp: `USER // ${new Date().toLocaleTimeString()}`,
+    };
+
+    setMessages((prev) => [...prev, newUserMsg]);
+    setResponseInput("");
   };
 
   return (
-    <div className="w-full min-h-screen space-y-8 p-6 sm:p-8 md:p-10 font-mono text-[#E8E2D5] flex flex-col justify-between">
-      <div className="space-y-8 max-w-5xl mx-auto w-full">
+    <div className="w-full min-h-screen space-y-6 p-6 sm:p-8 md:p-10 font-mono text-[#E8E2D5] flex flex-col justify-between">
+      <div className="space-y-6 max-w-5xl mx-auto w-full">
         {/* Top Protocol Navigation & Status Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#2E2923]">
           <Link
@@ -66,7 +91,7 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
           </div>
         </div>
 
-        {/* Chatbot Interface Header */}
+        {/* Level Header Title */}
         <div className="flex flex-wrap items-baseline justify-between gap-4 pb-2 border-b border-[#2E2923]">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-headline tracking-tight text-[#E8E2D5] uppercase">
             {protocol.title} — {protocol.codename}
@@ -78,116 +103,136 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
           )}
         </div>
 
-        {/* CHATBOT INTERFACE CONTAINER */}
+        {/* CHATGPT-STYLE CONVERSATION STREAM CONTAINER */}
         <div className="space-y-6 p-6 sm:p-8 bg-[#0F0E0D] border border-[#2E2923] rounded-sm shadow-2xl">
-          {/* AI / MISSION AGENT Header Bar */}
-          <div className="flex items-center justify-between border-b border-[#2A2520] pb-3">
-            <span className="text-xs font-bold text-[#FFC928] uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FFC928] animate-pulse" />
-              AI / MISSION AGENT
-            </span>
-            <span className="text-[11px] text-[#7A7266] font-mono">
-              [ TRANSMISSION ACTIVE // CLEARANCE: {protocol.clearanceLevel} ]
-            </span>
-          </div>
-
-          {/* 1. STARTING AI MESSAGE AREA */}
-          <div className="space-y-4 p-5 bg-[#141210] border border-[#3D3730] border-l-4 border-l-[#FFC928]">
-            <div className="text-xs font-bold text-[#FFC928] uppercase tracking-widest flex items-center gap-2">
-              <Terminal className="w-4 h-4" />
-              <span>AI TRANSMISSION</span>
-            </div>
-
-            <div className="space-y-3 text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed">
-              <p className="font-bold text-[#FFC928] bg-[#0D0C0B] p-3 border border-[#2E2923]">
-                SYSTEM MESSAGE: Protocol initialized. Your mission is now active. Submit your response to proceed.
-              </p>
-              
-              <p className="text-[#C2B9AC] leading-relaxed pt-1">
-                {protocol.description}
-              </p>
-
-              {protocol.briefing.length > 0 && (
-                <div className="space-y-1.5 text-xs text-[#A49B91] pt-1">
-                  <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
-                    MISSION DIRECTIVES &amp; BRIEFING:
+          {/* Conversation Stream */}
+          <div className="space-y-6 min-h-[280px]">
+            {messages.map((msg, index) => (
+              <div
+                key={msg.id}
+                className={`space-y-3 p-5 rounded-sm transition-all duration-200 animate-fade-in ${
+                  msg.sender === "ai"
+                    ? "bg-[#141210] border border-[#3D3730] border-l-4 border-l-[#FFC928]"
+                    : "bg-[#1A1714] border border-[#3D3730] border-r-4 border-r-[#C45A22]"
+                }`}
+              >
+                <div className="flex items-center justify-between border-b border-[#2A2520] pb-2">
+                  <span
+                    className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${
+                      msg.sender === "ai" ? "text-[#FFC928]" : "text-[#C45A22]"
+                    }`}
+                  >
+                    {msg.sender === "ai" ? (
+                      <>
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#FFC928] animate-pulse" />
+                        AI // MISSION AGENT
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#C45A22]" />
+                        USER // OPERATOR
+                      </>
+                    )}
                   </span>
-                  {protocol.briefing.map((item, idx) => (
-                    <p key={idx}>• {item}</p>
-                  ))}
+                  <span className="text-[10px] text-[#7A7266] font-mono">
+                    {msg.timestamp}
+                  </span>
                 </div>
-              )}
 
-              {/* Objectives checklist integrated inside AI conversation */}
-              {protocol.objectives.length > 0 && (
-                <div className="pt-2 space-y-2">
-                  <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
-                    TACTICAL OBJECTIVES:
-                  </span>
-                  <div className="grid grid-cols-1 gap-2">
-                    {protocol.objectives.map((obj, i) => {
-                      const isChecked = checkedObjectives[i] || isCompleted;
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => toggleObjective(i)}
-                          className={`w-full text-left p-3 border transition-colors flex items-center justify-between cursor-pointer ${
-                            isChecked
-                              ? "bg-[#1C1814] border-[#FFC928]/40 text-[#FFC928]"
-                              : "bg-[#0D0C0B] border-[#2A2520] text-[#A49B91] hover:border-[#3D3730]"
-                          }`}
-                        >
-                          <span className="text-xs font-mono">
-                            [{i + 1}] {obj}
+                <div className="space-y-3 text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed whitespace-pre-wrap">
+                  {msg.text}
+
+                  {/* For the initial AI message, show directives & objectives context */}
+                  {msg.sender === "ai" && index === 0 && (
+                    <>
+                      {protocol.briefing.length > 0 && (
+                        <div className="space-y-1.5 text-xs text-[#A49B91] pt-3 border-t border-[#2A2520]">
+                          <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
+                            MISSION DIRECTIVES &amp; BRIEFING:
                           </span>
-                          {isChecked ? (
-                            <CheckCircle2 className="w-4 h-4 text-[#FFC928] shrink-0 ml-2" />
-                          ) : (
-                            <div className="w-3.5 h-3.5 rounded-full border border-[#4A433A] shrink-0 ml-2" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                          {protocol.briefing.map((item, idx) => (
+                            <p key={idx}>• {item}</p>
+                          ))}
+                        </div>
+                      )}
+
+                      {protocol.objectives.length > 0 && (
+                        <div className="pt-2 space-y-2">
+                          <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
+                            TACTICAL OBJECTIVES:
+                          </span>
+                          <div className="grid grid-cols-1 gap-2">
+                            {protocol.objectives.map((obj, i) => {
+                              const isChecked = checkedObjectives[i] || isCompleted;
+                              return (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => toggleObjective(i)}
+                                  className={`w-full text-left p-3 border transition-colors flex items-center justify-between cursor-pointer ${
+                                    isChecked
+                                      ? "bg-[#1C1814] border-[#FFC928]/40 text-[#FFC928]"
+                                      : "bg-[#0D0C0B] border-[#2A2520] text-[#A49B91] hover:border-[#3D3730]"
+                                  }`}
+                                >
+                                  <span className="text-xs font-mono">
+                                    [{i + 1}] {obj}
+                                  </span>
+                                  {isChecked ? (
+                                    <CheckCircle2 className="w-4 h-4 text-[#FFC928] shrink-0 ml-2" />
+                                  ) : (
+                                    <div className="w-3.5 h-3.5 rounded-full border border-[#4A433A] shrink-0 ml-2" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              )}
+              </div>
+            ))}
+          </div>
+
+          {/* CHATGPT-LIKE ANCHORED CHAT COMPOSER AT BOTTOM */}
+          <div className="pt-4 border-t border-[#2E2923] space-y-3">
+            <div className="relative bg-[#141210] border border-[#3D3730] focus-within:border-[#FFC928] transition-colors rounded-sm overflow-hidden">
+              <textarea
+                value={responseInput}
+                onChange={(e) => setResponseInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmitResponse();
+                  }
+                }}
+                placeholder="Type your response..."
+                rows={3}
+                className="w-full p-4 bg-transparent text-[#E8E2D5] placeholder-[#665F55] font-mono text-xs sm:text-sm focus:outline-none resize-none pr-32"
+              />
+              <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSubmitResponse}
+                  disabled={!responseInput.trim()}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFC928] hover:bg-[#E0B020] disabled:bg-[#3D3730] text-[#0D0C0B] disabled:text-[#7A7266] font-mono font-bold text-xs tracking-widest uppercase transition-all duration-200 cursor-pointer shadow-lg disabled:cursor-not-allowed"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>[ SEND ]</span>
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* 2. PARTICIPANT RESPONSE INPUT AREA */}
-          <div className="space-y-3 pt-2">
-            <label className="block text-xs font-bold text-[#A49B91] uppercase tracking-widest">
-              &gt; TYPE YOUR RESPONSE
-            </label>
-            <textarea
-              value={responseInput}
-              onChange={(e) => setResponseInput(e.target.value)}
-              placeholder="Type your response..."
-              rows={6}
-              className="w-full p-4 bg-[#141210] border border-[#3D3730] focus:border-[#FFC928] text-[#E8E2D5] placeholder-[#665F55] font-mono text-xs sm:text-sm focus:outline-none transition-colors duration-200 resize-y"
-            />
-          </div>
-
-          {/* 3. SEND / SUBMIT BUTTON & STATUS */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-            <span className="text-[11px] text-[#7A7266] font-mono">
-              {submitted ? "[ RESPONSE TRANSMITTED // PENDING SYSTEM VERIFICATION ]" : "[ READY FOR SUBMISSION ]"}
-            </span>
-
-            <button
-              type="button"
-              onClick={handleSubmitResponse}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#FFC928] hover:bg-[#E0B020] text-[#0D0C0B] font-mono font-bold text-xs tracking-widest uppercase transition-all duration-200 cursor-pointer shadow-lg"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>[ SEND / SUBMIT ]</span>
-            </button>
+            <div className="flex justify-between items-center text-[10px] text-[#7A7266] font-mono px-1">
+              <span>SYSTEM MODEL: ZERO-DAY-MISSION-AI-v4.2</span>
+              <span>PRESS ENTER TO SEND, SHIFT+ENTER FOR NEW LINE</span>
+            </div>
           </div>
         </div>
 
         {/* Completion Control Bar */}
-        <div className="pt-6 border-t border-[#2E2923] flex flex-wrap items-center justify-between gap-6">
+        <div className="pt-4 border-t border-[#2E2923] flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="text-xs font-bold text-[#E8E2D5] uppercase tracking-wider">
               STATUS: {isCompleted ? "MISSION COMPLETED" : "OPERATION IN PROGRESS"}
