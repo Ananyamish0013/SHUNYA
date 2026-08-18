@@ -21,7 +21,7 @@ export const PROTOCOLS_DATA: Protocol[] = [
     title: "PROTOCOL 01",
     codename: "PERIMETER SECURE",
     description:
-      "Establish perimeter. Secure essential atmospheric stabilizers. Hostile entities reported in sectors 4 through 9. Proceed with extreme caution.",
+      "Perimeter breach detected in Sector 04-A. Re-establish atmospheric stabilizers before containment failure.",
     classifiedTag: "CLASSIFIED // EYES ONLY",
     date: "2026.08.16",
     clearanceLevel: "LEVEL 1",
@@ -29,14 +29,12 @@ export const PROTOCOLS_DATA: Protocol[] = [
     status: "available",
     sector: "SECTOR 04-A",
     objectives: [
-      "Locate atmospheric stabilizer terminal B-12",
-      "Bypass corrupted bio-metric security gate",
-      "Deploy secondary power generator before sundown",
-      "Confirm sector 4 perimeter isolation grid status",
+      "Secure atmospheric stabilizer terminal B-12",
+      "Bypass corrupted bio-metric gate",
+      "Deploy backup generator grid",
     ],
     briefing: [
-      "Sensors indicate catastrophic pressure drops in atmospheric containment dome Alpha. Auxiliary stabilizers are operating at 14% capacity.",
-      "Scout teams have reported non-human thermal signatures patrolling sectors 4 through 9. Maintain radio silence during terminal alignment.",
+      "Containment dome Alpha reporting 14% power. Re-align local power grid immediately.",
     ],
   },
   {
@@ -45,7 +43,7 @@ export const PROTOCOLS_DATA: Protocol[] = [
     title: "PROTOCOL 02",
     codename: "RESOURCE ACQUISITION",
     description:
-      "Resource acquisition. Scavenge phase initiates post-sundown. Target high-density urban ruins. Avoid structural anomalies and deep ash pockets.",
+      "Scavenge essential filtration units from high-density ruins post-sundown.",
     classifiedTag: "CLASSIFIED // EYES ONLY",
     date: "2026.08.17",
     clearanceLevel: "LEVEL 2",
@@ -53,14 +51,11 @@ export const PROTOCOLS_DATA: Protocol[] = [
     status: "available",
     sector: "URBAN RUINS SECTOR 09",
     objectives: [
-      "Locate central supply repository in sector 9 vault",
-      "Extract 4x intact atmospheric filtration cartridges",
-      "Avoid structural ash collapse zones along North Ridge",
-      "Return telemetry report to base before 04:00 hours",
+      "Extract 4x filtration cartridges",
+      "Avoid structural ash collapse zones",
     ],
     briefing: [
-      "The post-sundown window presents reduced thermal detection risk, but structural integrity of the high-rise ruins is decaying rapidly.",
-      "Avoid deep ash pockets—recent seismic tremors have created sinkholes into subterranean gas channels.",
+      "Low visibility window active. Retrieve canisters and evacuate.",
     ],
   },
   {
@@ -69,7 +64,7 @@ export const PROTOCOLS_DATA: Protocol[] = [
     title: "PROTOCOL 03",
     codename: "BLACKOUT TRANSMISSION",
     description:
-      "Interception of low-frequency emergency radio beacons. Decrypt lost terminal signals from subterranean bunker network B-7.",
+      "Intercept subterranean radio beacons and decrypt emergency distress signals.",
     classifiedTag: "RESTRICTED // EYES ONLY",
     date: "2026.08.18",
     clearanceLevel: "LEVEL 3",
@@ -77,12 +72,11 @@ export const PROTOCOLS_DATA: Protocol[] = [
     status: "available",
     sector: "BUNKER NETWORK B-7",
     objectives: [
-      "Align dish array with frequency 142.805 MHz",
-      "Isolate analog static noise from primary payload",
-      "Decode encrypted emergency broadcast archive",
+      "Align dish array to 142.805 MHz",
+      "Decode encrypted emergency archive",
     ],
     briefing: [
-      "An automated distress beacon from subterranean bunker B-7 began broadcasting 12 hours ago. Content remains heavily distorted by magnetic fallout.",
+      "Bunker B-7 broadcast detected. Extract signal payload.",
     ],
   },
   {
@@ -91,7 +85,7 @@ export const PROTOCOLS_DATA: Protocol[] = [
     title: "PROTOCOL 04",
     codename: "ATMOSPHERIC PURIFICATION",
     description:
-      "Bypass core automated containment grid. Calibrate chemical scrubbers before airborne particulate density reaches lethal limits.",
+      "Bypass containment grid and calibrate scrubbers before toxic ash density hits lethal levels.",
     classifiedTag: "TOP SECRET // DIRECTIVE 04",
     date: "2026.08.19",
     clearanceLevel: "LEVEL 4",
@@ -99,12 +93,11 @@ export const PROTOCOLS_DATA: Protocol[] = [
     status: "available",
     sector: "CHEMICAL PLANT ZETA",
     objectives: [
-      "Manually override scrubber pump manifold valve",
+      "Override scrubber manifold valve",
       "Purge toxic ash residue from coolant lines",
-      "Synchronize master control console with central grid",
     ],
     briefing: [
-      "Toxic ash saturation in the lower atmosphere has reached critical thresholds. Scrubber failure will trigger automated bunker evacuation lockouts.",
+      "Toxic ash saturation critical. Calibrate scrubber pumps immediately.",
     ],
   },
   {
@@ -113,7 +106,7 @@ export const PROTOCOLS_DATA: Protocol[] = [
     title: "PROTOCOL 05",
     codename: "SUB-SURFACE EXTRACTION",
     description:
-      "Infiltrate flooded sewer networks. Recover dormant archival telemetry drives from pre-collapse data vaults.",
+      "Infiltrate flooded sewer channels to recover archival telemetry drives.",
     classifiedTag: "CLASSIFIED // EYES ONLY",
     date: "2026.08.20",
     clearanceLevel: "LEVEL 4",
@@ -121,12 +114,11 @@ export const PROTOCOLS_DATA: Protocol[] = [
     status: "available",
     sector: "SUB-SURFACE VAULT 12",
     objectives: [
-      "Navigate lower aqueduct drainage tunnels",
-      "Extract optical memory core from server rack #03",
-      "Evacuate before water surge pump cycles",
+      "Extract optical memory core #03",
+      "Evacuate before water surge cycle",
     ],
     briefing: [
-      "Pre-collapse telemetry logs contain key override codes for the central command array. Archives are submerged under 3 meters of particulate runoff.",
+      "Telemetry core contains key override codes. Retrieve before flood cycle.",
     ],
   },
   {
@@ -135,7 +127,7 @@ export const PROTOCOLS_DATA: Protocol[] = [
     title: "PROTOCOL 06",
     codename: "ZERO DAY INITIATION",
     description:
-      "Final mission protocol. Override central core execution matrix and avert final world collapse protocol.",
+      "Final mission protocol. Override central core execution matrix and halt world collapse.",
     classifiedTag: "TOP SECRET // MAXIMUM CLEARANCE",
     date: "2026.08.21",
     clearanceLevel: "TOP SECRET",
@@ -143,12 +135,11 @@ export const PROTOCOLS_DATA: Protocol[] = [
     status: "available",
     sector: "COMMAND CORE CENTRAL",
     objectives: [
-      "Access central zero day terminal mainframe",
-      "Execute protocol override sequence key sequence",
-      "Avert permanent system termination code",
+      "Access central zero day mainframe",
+      "Execute protocol override sequence",
     ],
     briefing: [
-      "The final barrier between survival and permanent termination. Execute the terminal sequence under extreme pressure.",
+      "Final system termination code active. Execute manual override.",
     ],
   },
 ];
