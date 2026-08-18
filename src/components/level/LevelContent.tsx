@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Protocol } from "@/lib/protocols";
 import { useProtocolStore } from "@/stores/useProtocolStore";
 import { RedWaxSeal } from "../protocols/RedWaxSeal";
-import { ArrowLeft, CheckCircle2, Send } from "lucide-react";
+import { LevelTimer } from "./LevelTimer";
+import { ArrowLeft, CheckCircle2, Send, ChevronDown, ChevronUp } from "lucide-react";
 
 interface LevelContentProps {
   protocol: Protocol;
@@ -24,15 +25,16 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
   const markUncompleted = useProtocolStore((state) => state.markUncompleted);
 
   const [showCompletionNotice, setShowCompletionNotice] = useState(false);
+  const [showBriefing, setShowBriefing] = useState(false);
   const [responseInput, setResponseInput] = useState("");
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
 
-  // Initial conversation state with starting AI message
+  // Initial conversation state with exact starting AI message: "Hello. The mission has started."
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "initial-ai-msg",
       sender: "ai",
-      text: `Your next objective for ${protocol.title} (${protocol.codename}) has been initialized.\n\n${protocol.description}`,
+      text: "Hello. The mission has started.",
       timestamp: "SYSTEM // 00:00:01",
     },
   ]);
@@ -103,76 +105,96 @@ export const LevelContent: React.FC<LevelContentProps> = ({ protocol }) => {
           )}
         </div>
 
-        {/* CONVERSATION CONTAINER */}
+        {/* CHANGE 2: WARRIOR VS MONSTER COUNTDOWN TIMER */}
+        <LevelTimer initialMinutes={5} />
+
+        {/* Optional Collapsible Protocol Reference Directives */}
+        <div className="border border-[#2E2923] bg-[#0D0C0B] rounded-sm overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowBriefing(!showBriefing)}
+            className="w-full px-4 py-2.5 bg-[#141210] hover:bg-[#1A1714] text-left text-xs font-bold text-[#A49B91] hover:text-[#FFC928] flex items-center justify-between transition-colors border-b border-[#2E2923]"
+          >
+            <span>[ PROTOCOL REFERENCE BRIEFING &amp; OBJECTIVES ]</span>
+            {showBriefing ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          
+          {showBriefing && (
+            <div className="p-5 space-y-4 text-xs text-[#C2B9AC] bg-[#0F0E0D]">
+              <p className="leading-relaxed">{protocol.description}</p>
+              
+              {protocol.briefing.length > 0 && (
+                <div className="space-y-1 pt-1">
+                  <span className="text-[#FFC928] text-[11px] font-bold block uppercase">
+                    DIRECTIVES:
+                  </span>
+                  {protocol.briefing.map((item, idx) => (
+                    <p key={idx}>• {item}</p>
+                  ))}
+                </div>
+              )}
+
+              {protocol.objectives.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <span className="text-[#FFC928] text-[11px] font-bold block uppercase">
+                    OBJECTIVES:
+                  </span>
+                  <div className="space-y-1.5">
+                    {protocol.objectives.map((obj, i) => {
+                      const isChecked = checkedObjectives[i] || isCompleted;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => toggleObjective(i)}
+                          className={`w-full text-left p-2 border transition-colors flex items-center justify-between cursor-pointer ${
+                            isChecked
+                              ? "bg-[#1C1814] border-[#FFC928]/40 text-[#FFC928]"
+                              : "bg-[#0D0C0B] border-[#2A2520] text-[#A49B91] hover:border-[#3D3730]"
+                          }`}
+                        >
+                          <span className="text-xs font-mono">
+                            [{i + 1}] {obj}
+                          </span>
+                          {isChecked ? (
+                            <CheckCircle2 className="w-4 h-4 text-[#FFC928] shrink-0 ml-2" />
+                          ) : (
+                            <div className="w-3.5 h-3.5 rounded-full border border-[#4A433A] shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* CHANGE 1: LEVEL CHAT INTERFACE */}
         <div className="space-y-6 p-6 sm:p-8 bg-[#0F0E0D] border border-[#2E2923] rounded-sm shadow-2xl">
-          {/* Messages Stream */}
-          <div className="space-y-6 min-h-[300px] flex flex-col justify-start">
-            {messages.map((msg, index) => (
+          {/* Chat Stream */}
+          <div className="space-y-5 min-h-[280px] flex flex-col justify-start">
+            {messages.map((msg) => (
               <div key={msg.id} className="w-full">
                 {msg.sender === "ai" ? (
-                  /* PLAIN TEXT AI MESSAGE (NO BOX, NO BORDERS, NO CARDS, NO HEADER BARS) */
-                  <div className="space-y-4 text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed max-w-full">
-                    <p className="font-normal text-[#E8E2D5] leading-relaxed">
-                      Your next objective for {protocol.title} ({protocol.codename}) has been initialized.
-                    </p>
-
-                    <p className="text-[#C2B9AC] leading-relaxed">
-                      {protocol.description}
-                    </p>
-
-                    {index === 0 && protocol.briefing.length > 0 && (
-                      <div className="space-y-1.5 text-xs text-[#A49B91] pt-2">
-                        <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
-                          MISSION DIRECTIVES &amp; BRIEFING:
-                        </span>
-                        {protocol.briefing.map((item, idx) => (
-                          <p key={idx}>• {item}</p>
-                        ))}
-                      </div>
-                    )}
-
-                    {index === 0 && protocol.objectives.length > 0 && (
-                      <div className="pt-2 space-y-2">
-                        <span className="text-[#FFC928] text-[11px] uppercase font-bold block">
-                          TACTICAL OBJECTIVES:
-                        </span>
-                        <div className="grid grid-cols-1 gap-2">
-                          {protocol.objectives.map((obj, i) => {
-                            const isChecked = checkedObjectives[i] || isCompleted;
-                            return (
-                              <button
-                                key={i}
-                                type="button"
-                                onClick={() => toggleObjective(i)}
-                                className={`w-full text-left py-2 px-3 transition-colors flex items-center justify-between cursor-pointer ${
-                                  isChecked
-                                    ? "text-[#FFC928]"
-                                    : "text-[#A49B91] hover:text-[#E8E2D5]"
-                                }`}
-                              >
-                                <span className="text-xs font-mono">
-                                  [{i + 1}] {obj}
-                                </span>
-                                {isChecked ? (
-                                  <CheckCircle2 className="w-4 h-4 text-[#FFC928] shrink-0 ml-2" />
-                                ) : (
-                                  <div className="w-3.5 h-3.5 rounded-full border border-[#4A433A] shrink-0 ml-2" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+                  /* AI MESSAGE: Left Aligned Conversational Message */
+                  <div className="space-y-1 max-w-[85%] text-left">
+                    <div className="text-[11px] font-bold text-[#FFC928] uppercase tracking-widest">
+                      &gt; AI // MISSION AGENT
+                    </div>
+                    <div className="p-4 bg-[#141210] border border-[#3D3730] text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed whitespace-pre-wrap rounded-sm">
+                      {msg.text}
+                    </div>
                   </div>
                 ) : (
-                  /* SUBMITTED USER MESSAGE */
+                  /* USER MESSAGE: Right Aligned Conversational Message */
                   <div className="w-full flex justify-end">
-                    <div className="space-y-2 p-4 rounded-sm bg-[#1C1814] border border-[#3D3730] border-r-4 border-r-[#C45A22] text-left ml-auto max-w-[85%] sm:max-w-[75%]">
-                      <div className="text-[10px] text-[#C45A22] font-bold uppercase tracking-widest">
-                        USER // OPERATOR
+                    <div className="space-y-1 max-w-[85%] sm:max-w-[75%] text-right">
+                      <div className="text-[11px] font-bold text-[#C45A22] uppercase tracking-widest">
+                        &gt; USER
                       </div>
-                      <div className="text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed whitespace-pre-wrap">
+                      <div className="p-4 bg-[#1C1814] border border-[#3D3730] border-r-2 border-r-[#C45A22] text-xs sm:text-sm text-[#E8E2D5] font-mono leading-relaxed whitespace-pre-wrap text-left rounded-sm">
                         {msg.text}
                       </div>
                     </div>
